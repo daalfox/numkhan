@@ -6,10 +6,25 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	AlreadyVoted = NumkhanErr("you can't vote multiple times")
+)
+
+type NumkhanErr string
+
+func (e NumkhanErr) Error() string {
+	return string(e)
+}
+
 type Candidate struct {
 	gorm.Model
 	N     int
 	Votes uint
+}
+type User struct {
+	gorm.Model
+	Uuid    uuid.UUID
+	IsVoted bool
 }
 
 func SetupDb(name string) (*gorm.DB, error) {
@@ -19,6 +34,7 @@ func SetupDb(name string) (*gorm.DB, error) {
 	}
 
 	db.AutoMigrate(&Candidate{})
+	db.AutoMigrate(&User{})
 
 	for n := range 10 {
 		row := Candidate{N: n, Votes: 0}
@@ -41,18 +57,29 @@ func (s *Service) Votes(n int) (uint, error) {
 }
 
 func (s *Service) Subscribe() (uuid.UUID, error) {
-	uuid := uuid.New()
+	user := User{
+		Uuid:    uuid.New(),
+		IsVoted: false,
+	}
 
-	return uuid, nil
+	s.Db.Create(&user)
+
+	return user.Uuid, nil
 }
 
 func (s *Service) Vote(id uuid.UUID, n int) error {
-	// TODO: check if user is voted
+	user := User{Uuid: id}
+	s.Db.First(&user)
+	if user.IsVoted {
+		return AlreadyVoted
+	}
 
 	c := Candidate{N: n}
 	s.Db.First(&c)
 	c.Votes += 1
+	user.IsVoted = true
 	s.Db.Save(&c)
+	s.Db.Save(&user)
 
 	return nil
 }

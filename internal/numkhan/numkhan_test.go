@@ -8,6 +8,7 @@ import (
 
 func TestSetupDb(t *testing.T) {
 	db, _ := SetupDb("test_db.db")
+	defer os.Remove("test_db.db")
 
 	var candidates []Candidate
 	db.Find(&candidates)
@@ -23,6 +24,4 @@ func TestSetupDb(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("expected %v\ngot %v", want, got)
 	}
-
-	os.Remove("test_db.db")
 }

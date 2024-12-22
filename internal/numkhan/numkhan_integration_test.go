@@ -1,18 +1,16 @@
-package service
+package numkhan
 
 import (
 	"os"
 	"testing"
-
-	"github.com/daalfox/numkhan/internal/numkhan"
 )
 
 func TestNewVoter(t *testing.T) {
 	dbName := "test_db.db"
-	db, _ := numkhan.SetupDb(dbName)
+	db, _ := SetupDb(dbName)
 	defer os.Remove(dbName)
 
-	service := numkhan.Service{Db: db}
+	service := Service{Db: db}
 
 	votesBefore, _ := service.Votes(0)
 
@@ -28,10 +26,10 @@ func TestNewVoter(t *testing.T) {
 
 func TestPreventVotingMultipleTimes(t *testing.T) {
 	dbName := "test_db.db"
-	db, _ := numkhan.SetupDb(dbName)
+	db, _ := SetupDb(dbName)
 	defer os.Remove(dbName)
 
-	service := numkhan.Service{Db: db}
+	service := Service{Db: db}
 
 	id, _ := service.Subscribe()
 
@@ -39,7 +37,7 @@ func TestPreventVotingMultipleTimes(t *testing.T) {
 	service.Vote(id, 0)
 	// second vote
 	err := service.Vote(id, 0)
-	if err.Error() != numkhan.AlreadyVoted.Error() {
+	if err.Error() != AlreadyVoted.Error() {
 		t.Error("expected to fail on second vote, but didn't")
 	}
 }

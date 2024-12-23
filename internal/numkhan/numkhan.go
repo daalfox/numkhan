@@ -48,6 +48,14 @@ type Service struct {
 	Db *gorm.DB
 }
 
+func (s *Service) Candidates() []Candidate {
+	var candidates []Candidate
+
+	s.Db.Find(&candidates)
+
+	return candidates
+}
+
 func (s *Service) Votes(n int) (uint, error) {
 	c := Candidate{N: n}
 

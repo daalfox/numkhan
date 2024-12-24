@@ -17,9 +17,9 @@ func (e NumkhanErr) Error() string {
 }
 
 type Candidate struct {
-	gorm.Model
-	N     int
-	Votes uint
+	ID    int  `json:"id" gorm:"primaryKey"`
+	N     int  `json:"n"`
+	Votes uint `json:"votes"`
 }
 type User struct {
 	gorm.Model
@@ -36,9 +36,13 @@ func SetupDb(name string) (*gorm.DB, error) {
 	db.AutoMigrate(&Candidate{})
 	db.AutoMigrate(&User{})
 
-	for n := range 10 {
-		row := Candidate{N: n, Votes: 0}
-		db.Create(&row)
+	var candidates []Candidate
+	db.Find(&candidates)
+	if len(candidates) == 0 {
+		for n := range 10 {
+			row := Candidate{N: n, Votes: 0}
+			db.Create(&row)
+		}
 	}
 
 	return db, nil
